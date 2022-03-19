@@ -8,15 +8,13 @@ def get_list_line(json_data: list)-> str:
     for line in json_data:
         
         if(isinstance(line,dict)):   
-            if(is_dict_correct(json_data)):
-                raise ValueError('"get_ul_line.line" has wrong number of elements')
-            html= html + get_li_line(line)
+            html= html + get_dic_line(line)
         
         elif (isinstance(dic_line,list)):
-            html= get_ul_line(line)
+            html= get_list_line(line)
              
         else:
-            html= html + "<li>"+ line + "</li>"
+            html= html + line
 
     return html
 
@@ -28,7 +26,7 @@ def get_dic_line(dic_line: dict)-> str:
     
     for key in dic_line:
         
-        tag=""
+        tag_dict = dict()
         class_list = []
         id_list = []
         
@@ -41,19 +39,25 @@ def get_dic_line(dic_line: dict)-> str:
             for elem in list_key:
                 
                 if "#" in elem:
-                    id_list.append(replace(elem,"#",""))
+                    (cls,id_attr) = elem.split("#")
+                    id_list.append(id_attr)
+                    class_list.append(cls)
                 
                 elif list_key.index(elem)==0:
                     tag = elem
                 
                 else:
                     class_list.append(elem)
-                            
+
+            str_id=""
+            str_class=""
             
-            if not class_list:
-                
-                str1 = ''.join(str(e)+" " for e in list1
-                html= html +"<"+key+">"+dic_line[key]+"</"+key+">"
+            if (bool(id_list)):
+                str_id = " id=\""+" ".join(id_list) +"\""
+            if (bool(class_list)):
+                str_class = " class=\""+" ".join(class_list) +"\""
+            
+            html= html + "<" + tag + str_id + str_class + ">\"" + dic_line[key] + "\"</" + tag + ">"
     
     return html
 
@@ -70,13 +74,13 @@ def task_5(json_file_path: str)-> str:
         with open(json_file_path,"r") as file:        
             json_data = json.load(file)
             if(isinstance(json_data,list)):
-                html = get_list_line(json_data)
+                html = html + get_list_line(json_data)
             
             elif(isinstance(json_data,dict)):
-                html =  get_dic_line(json_data)
+                html =  html + get_dic_line(json_data)
             
             else:    
-                html = json_data
+                html = html + json_data
 
     except Exception as e:
         raise ValueError(e)
@@ -84,11 +88,18 @@ def task_5(json_file_path: str)-> str:
     return html
 
 
-str_task_5_in = """
+str_task_5_in = """[
                     {
                         "p.my-class#my-id": "hello",
                         "p.my-class.my-class2":"example<a>asd</a>" 
-                    }
+                        
+                     },
+                     {
+                        "p.my2-class#my2-id": "hello",
+                        "p.my2-class.my2-class2":"example<a>asd</a>" 
+                        
+                     }
+                    ]
             """
 json_file_path = "Task_5_in.json"
 
@@ -107,4 +118,5 @@ with open(json_file_path,"w") as file:
 
 json_file_path = "Task_5_in.json"
 print(task_5(json_file_path))
+
 
